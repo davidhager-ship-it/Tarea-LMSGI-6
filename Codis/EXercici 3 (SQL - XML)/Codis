@@ -1,0 +1,12 @@
+- Com podem obtenir els correus electrònics de tots els empleats que tenen el títol de treball "VP Sales"?
+    SELECT ExtractValue(contingut_xml, '//employee[jobTitle="VP Sales"]/email') AS Emails
+    FROM xml_import;
+- Quants empleats treballen a la regió (territory) "EMEA"?)
+    SELECT ExtractValue(contingut_xml, 'count(//employee[office/Territory="EMEA"])') AS Total_EMEA
+    FROM xml_import;
+-Quins són els cognoms dels empleats que tenen com a superior a l'empleat amb el codi  employeeNumber="1056"?
+    SELECT ExtractValue(contingut_xml, '//employee[reportsTo="1056"]/lastName') AS Apellidos
+    FROM xml_import;
+-Quina és la ciutat de l'oficina de l'empleat amb employeeNumber="1166"?
+    SELECT ExtractValue(contingut_xml, '//employee[@employeeNumber="1166"]/office/City') AS Ciudad
+    FROM xml_import;
