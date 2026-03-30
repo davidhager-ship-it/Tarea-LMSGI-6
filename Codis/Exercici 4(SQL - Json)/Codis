@@ -1,0 +1,21 @@
+-Quina consulta utilitzaries per obtenir els telèfons (phone) de totes les oficines de la taula offices? (Utilitza la funció JSON_UNQUOTE per eliminar les cometes del valor del JSON)
+    SELECT JSON_UNQUOTE(JSON_EXTRACT(JSON_OBJECT('phone', phone), '$.phone')) AS phone
+    FROM offices;
+
+-Com podries filtrar els empleats que tenen una extensió que inclou el número 23  (utilitza JSON_EXTRACT)??
+    SELECT *
+    FROM employees
+    WHERE JSON_EXTRACT(JSON_OBJECT('extension', extension), '$.extension') LIKE '%23%';
+
+-Escriu una consulta que obtingui l'ID de l'empleat (employee_id) i el cognom (lastName) de tots els empleats.
+    SELECT employeeNumber AS employee_id, lastName
+    FROM employees;
+
+-Escriu una consulta que recuperi el número d'empleat, el seu nom complet, i la ciutat de la seva oficina, unint les taules offices i employees.
+    SELECT 
+    e.employeeNumber,
+    CONCAT(e.firstName, ' ', e.lastName) AS full_name,
+    o.city
+    FROM employees e
+    JOIN offices o 
+    ON e.officeCode = o.officeCode;
