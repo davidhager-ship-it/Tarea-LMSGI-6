@@ -1,0 +1,96 @@
+2.1. Quin són els noms dels clients que tenen un límit de crèdit (creditLimit) entre 1160 i 1165 $? descartar explícitament els valors NULL. 
+distinct-values(
+  for $c in collection("CLASSICMODELS_BD")//check/customer
+  let $limit := xs:decimal($c/creditLimit)
+  where $limit >= 1160 and $limit <= 1165 and $c/creditLimit != "NULL"
+  return $c/customerName/text()
+)
+
+2.2. Quants clients tenen un límit de crèdit (creditLimit) superior a 1600?
+count(
+  for $c in collection("CLASSICMODELS_BD")/customers/customer
+  let $limit := number($c/creditLimit)
+  where $limit > 1600
+  return $c
+)
+2.3. Quina és la quantitat total (amount) dels pagaments realitzats pels clients associats a un representant de vendes amb salesRepEmployeeNumber=1370?
+
+xs:string(xs:double(sum(
+  for $p in collection("CLASSICMODELS_BD")//check
+  where $p/customer/salesRepEmployeeNumber = "1370"
+  return xs:double($p/amount)
+)))
+
+2.4. Mostra una llista dels empleats amb el seu nom complet,  Numero d'empleat i la ciutat de l'oficina (city) on treballen. El llistat ha d'estar ordenat pel numero d'empleat
+for $e in collection("CLASSICMODELS_BD")//employee
+order by xs:integer($e/@employeeNumber)
+return concat("Nom:", $e/firstName, " ", $e/lastName, ", Numero d'empleat:", $e/@employeeNumber, ", Oficina assignada:", $e/office/City)
+
+2.5. Mostra una llista amb la id de les transaccions superior  a la mitjana de totes les transaccions. Ordenales alfabèticament.
+let $avg := avg(collection("CLASSICMODELS_BD")//check/amount)
+for $c in collection("CLASSICMODELS_BD")//check
+where xs:decimal($c/amount) > $avg
+order by string($c/@number)
+return data($c/@number)
+
+2.6.Quants empleats hi ha a tota l'empresa?
+
+count(collection("CLASSICMODELS_BD")//employee)
+2.7. Troba el valor mitjà (amount) de tots els pagaments, arrodonit a l'enter més proper. Utilitza la comanda collection per treballar amb la Base de Dades completa CLASSICMODELS_BD.
+round(avg(collection("CLASSICMODELS_BD")//check/amount))
+
+2.8.  Mostra el número de xec (number), l'import (amount), i el nom del client (customerName) associats a xecs amb import superior a la mitjana trobada a l'apartat 2.7. Ordena els resultats de més alt a més baix import. Utilitza la comanda collection.
+
+for $c in collection("CLASSICMODELS_BD")//check
+let $amt := xs:decimal($c/amount)
+where $amt > 32432
+order by $amt descending
+return concat("Compte: ", $c/@number, ", Import: ", format-number($amt, "0.00"), 
+              ", Client: ", $c/customer/customerName)
+2.9. Mostra el nombre d'empleats, clients i xecs que hi ha a la base de dades. Utilitza un salt de línia amb una variable let $nl := "&#10;".
+El resultat ha de ser el seguent:
+
+let $nl := "&#10;"
+return concat(
+  "Número d'empleats: ", count(collection("CLASSICMODELS_BD")//employee), $nl,
+  "Número de clients: ", count(collection("CLASSICMODELS_BD")//customer), $nl,
+  "Número de xecs: ", count(collection("CLASSICMODELS_BD")//check)
+)
+2.10. Troba la id (employeeNumber) dels empleats amb cognom Patterson.
+El resultat ha de ser el seguent:
+
+for $e in collection("CLASSICMODELS_BD")//employee
+where $e/lastName = "Patterson"
+return $e/@employeeNumber
+2.11. Troba la id (number) dels xecs creats pel client amb customerNumber="103".
+
+for $c in collection("CLASSICMODELS_BD")//check
+where $c/customer/@customerNumber = "103"
+return $c/@number
+2.12. Retorna el número de xecs (number) creats pels clients amb el cognom "Atelier graphique". Utilitza una consulta niada per obtenir el customerNumber del client associat i filtrar pels seus xecs.
+
+for $check in collection("CLASSICMODELS_BD")//check
+where $check/customer/customerNumber = (
+  for $c in collection("CLASSICMODELS_BD")//customer
+  where $c/customerName = "Atelier graphique"
+  return $c/@customerNumber
+)
+return $check/@number
+2.14. Retorna els imports (amount) dels xecs associats a clients amb cognoms King o Schmitt. Ordena els imports de major a menor.
+for $p in collection("CLASSICMODELS_BD")//check
+let $cNumber := $p/customer/@customerNumber
+let $cliente := collection("CLASSICMODELS_BD")//customer[@customerNumber = $cNumber]
+where $cliente/contact/contactLastName = "King" 
+   or $cliente/contact/contactLastName = "Schmitt"
+order by xs:double($p/amount) descending
+return $p/amount
+
+2.15. Retorna el número (number) i l'import (amount) dels xecs associats a clients gestionats pels empleats amb cognoms Fixter o King. Ordena els resultats de major a menor import.
+
+for $p in collection("CLASSICMODELS_BD")//check
+let $repID := $p/customer/salesRepEmployeeNumber
+for $e in collection("CLASSICMODELS_BD")//employee
+where $e/@employeeNumber = $repID 
+  and ($e/lastName = "Fixter" or $e/lastName = "King")
+order by xs:decimal($p/amount) descending
+return concat("ID: ", $p/@number, ", Quantitat: ", $p/amount) 
